@@ -50,6 +50,14 @@ Navigate into the project:
 cd ai-internship-capstone
 ```
 
+Verify your environment:
+
+```bash
+node -v
+git --version
+gh --version
+```
+
 ## AI Assistance
 
 Claude Code is used throughout this project to assist with documentation, project setup, and development tasks.
