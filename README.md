@@ -58,6 +58,16 @@ git --version
 gh --version
 ```
 
+## Deployment
+
+The application is deployed with Vercel.
+
+Live preview:
+https://ai-internship-capstone.vercel.app/
+
+Every push to the GitHub repository is connected to Vercel's deployment workflow.
+
+
 ## AI Assistance
 
 Claude Code is used throughout this project to assist with documentation, project setup, and development tasks.
