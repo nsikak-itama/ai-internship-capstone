@@ -60,12 +60,47 @@ gh --version
 
 ## Deployment
 
-The application is deployed with Vercel.
+The application is deployed using Vercel and is connected to the GitHub repository.
 
-Live preview:
+### Live Preview
+
 https://ai-internship-capstone.vercel.app/
 
-Every push to the GitHub repository is connected to Vercel's deployment workflow.
+### Repository
+
+https://github.com/nsikak-itama/ai-internship-capstone
+
+### Deployment Workflow
+
+The GitHub repository is connected to Vercel so that pushes to the repository can trigger new deployments automatically.
+
+The deployed application includes the following routes:
+
+- `/` — Home page
+- `/settings` — Settings form
+- `/health` — Health-check page with fetched data
+
+The application has been tested locally and in the Vercel deployment to verify that the routes load correctly and the layout is responsive across desktop and mobile viewport sizes.
+
+## Assignment Submission
+
+### Deliverables
+
+- **Live Preview:** https://ai-internship-capstone.vercel.app/
+- **GitHub Repository:** https://github.com/nsikak-itama/ai-internship-capstone
+
+### Completed Requirements
+
+- [x] Next.js application scaffolded
+- [x] Routed placeholder pages created
+- [x] Shared root layout and navigation implemented
+- [x] Tailwind CSS configured
+- [x] Health-check page placeholder created
+- [x] Vercel deployment configured
+- [x] Production build verified successfully
+- [x] Responsive layout verified at mobile and desktop sizes
+- [x] Environment files and secrets excluded from Git
+- [x] Live preview URL available
 
 
 ## AI Assistance
