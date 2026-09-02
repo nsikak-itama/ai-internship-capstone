@@ -1,4 +1,5 @@
 import Disclosure from "../../playground/Disclosure";
+import Tabs from "../../playground/Tabs";
 
 export default function PlaygroundPage() {
   return (
@@ -14,6 +15,29 @@ export default function PlaygroundPage() {
             people with different abilities can use them effectively.
           </p>
         </Disclosure>
+      </section>
+
+      <section>
+        <h2>Tabs</h2>
+        <Tabs tabs={[
+            {
+              id: "tab-overview",
+              label: "Overview",
+              content: <p>This is the overview panel.</p>,
+            },
+            {
+              id: "tab-features",
+              label: "Features",
+              content: <p>This is the features panel.</p>,
+            },
+            {
+              id: "tab-details",
+              label: "Details",
+              content: <p>This is the details panel.</p>,
+            }, 
+        ]}>
+
+        </Tabs>
       </section>
     </main>
   );
