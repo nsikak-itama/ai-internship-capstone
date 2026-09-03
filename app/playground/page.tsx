@@ -1,5 +1,6 @@
 import Disclosure from "../../playground/Disclosure";
 import Tabs from "../../playground/Tabs";
+import ModalDialog from "../../playground/ModalDialog";
 
 export default function PlaygroundPage() {
   return (
@@ -39,6 +40,15 @@ export default function PlaygroundPage() {
 
         </Tabs>
       </section>
+      
+      <section>
+        <h2>Modal Dialog</h2>
+        <ModalDialog title="Example dialog">
+            <p>
+                This is an example modal dialog for testing accessible interaction.
+            </p>
+        </ModalDialog>
+        </section>
     </main>
   );
 }
