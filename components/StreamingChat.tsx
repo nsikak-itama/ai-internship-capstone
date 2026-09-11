@@ -7,13 +7,15 @@ import {
   useState,
 } from "react";
 import ReactMarkdown from "react-markdown";
+
 import {
   DefaultChatTransport,
   type UIMessage,
 } from "ai";
+
 import { useChat } from "@ai-sdk/react";
 
-function getMessageText(message: UIMessage) {
+ function getMessageText(message: UIMessage) {
   return message.parts
     .filter((part) => part.type === "text")
     .map((part) => part.text)
@@ -43,6 +45,176 @@ function MessageContent({
     </div>
   );
 }
+
+
+type ScoreCandidateToolPartData = {
+  type: "tool-scoreCandidate";
+  toolCallId: string;
+  state:
+    | "input-streaming"
+    | "input-available"
+    | "output-available"
+    | "output-error";
+  input?: unknown;
+  output?: unknown;
+  errorText?: string;
+};
+
+function ScoreCandidateToolPart({
+  part,
+}: {
+  part: ScoreCandidateToolPartData;
+}) {
+  if (part.state === "input-streaming") {
+    return (
+      <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-blue-900">
+        <p className="text-sm font-semibold">
+          Preparing candidate score
+        </p>
+
+        <p className="mt-1 text-sm text-blue-700">
+          Gathering the qualification information...
+        </p>
+
+        <div
+          className="mt-3 h-1.5 overflow-hidden rounded-full bg-blue-100"
+          aria-hidden="true"
+        >
+          <div className="h-full w-1/2 animate-pulse rounded-full bg-blue-500" />
+        </div>
+      </div>
+    );
+  }
+
+  if (part.state === "input-available") {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+        <p className="text-sm font-semibold text-gray-900">
+          Candidate information received
+        </p>
+
+        <p className="mt-1 text-sm text-gray-600">
+          The qualification profile is being scored.
+        </p>
+      </div>
+    );
+  }
+
+  if (part.state === "output-error") {
+    return (
+      <div
+        role="alert"
+        className="rounded-xl border border-red-200 bg-red-50 px-4 py-3"
+      >
+        <p className="text-sm font-semibold text-red-900">
+          Candidate score unavailable
+        </p>
+
+        <p className="mt-1 text-sm text-red-700">
+          {part.errorText ?? "The scoring tool could not complete."}
+        </p>
+      </div>
+    );
+  }
+
+  if (part.state === "output-available") {
+    const output = part.output;
+
+    if (
+      typeof output !== "object" ||
+      output === null ||
+      !("score" in output) ||
+      !("level" in output) ||
+      !("strengths" in output) ||
+      !("recommendation" in output) ||
+      typeof output.score !== "number" ||
+      typeof output.level !== "string" ||
+      !Array.isArray(output.strengths) ||
+      !output.strengths.every(
+        (strength): strength is string =>
+          typeof strength === "string",
+      ) ||
+      typeof output.recommendation !== "string"
+    ) {
+      return (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3"
+        >
+          <p className="text-sm font-semibold text-red-900">
+            Candidate score unavailable
+          </p>
+
+          <p className="mt-1 text-sm text-red-700">
+            The tool returned an unexpected result.
+          </p>
+        </div>
+      );
+    }
+
+    const score = output.score;
+    const level = output.level;
+    const strengths = output.strengths;
+    const recommendation = output.recommendation;
+
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Qualification score
+            </p>
+
+            <p className="mt-1 text-sm font-medium capitalize text-gray-900">
+              {level} profile
+            </p>
+          </div>
+
+          <div className="text-right">
+            <p className="text-3xl font-bold text-gray-900">
+              {score}
+            </p>
+
+            <p className="text-xs text-gray-500">
+              out of 100
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-sm font-semibold text-gray-900">
+            Strengths identified
+          </p>
+
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            {strengths.map((strength) => (
+              <li
+                key={strength}
+                className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700"
+              >
+                {strength}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          <p className="text-sm font-semibold text-gray-900">
+            Recommendation
+          </p>
+
+          <p className="mt-1 text-sm text-gray-600">
+            {recommendation}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
 
 export default function StreamingChat() {
   const [input, setInput] = useState("");
@@ -211,16 +383,27 @@ export default function StreamingChat() {
                       {isUser ? "You" : "Assistant"}
                     </p>
 
-                    {messageText ? (
-                      <MessageContent
-                        message={message}
-                        renderMarkdown={renderMarkdown}
-                      />
-                    ) : (
-                      <span className="text-sm opacity-60">
-                        ...
-                      </span>
-                    )}
+                    {message.parts.map((part, index) => {if (part.type === "text") {
+    return part.text ? (
+      <MessageContent
+        key={`${message.id}-text-${index}`}
+        message={message}
+        renderMarkdown={renderMarkdown}
+      />
+    ) : null;
+  }
+
+  if (part.type === "tool-scoreCandidate") {
+    return (
+     <ScoreCandidateToolPart
+      key={part.toolCallId}
+      part={part as unknown as ScoreCandidateToolPartData}
+     />
+    );
+  }
+
+  return null;
+})}
                   </div>
                 </div>
               );

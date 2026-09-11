@@ -1,4 +1,5 @@
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { scoreCandidate } from "@/lib/ai/tools/scoreCandidate";
 
 import { model, systemPrompt } from "@/lib/ai/config";
 
@@ -11,6 +12,9 @@ export async function POST(req: Request) {
     model,
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
+    tools:{
+      scoreCandidate,
+    }
   });
 
   return result.toUIMessageStreamResponse();
