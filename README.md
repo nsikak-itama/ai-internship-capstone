@@ -79,6 +79,7 @@ The deployed application includes the following routes:
 - `/` — Home page
 - `/settings` — Settings form
 - `/health` — Health-check page with fetched data
+- `/chat` — Streaming AI qualification chat with candidate scoring tool results
 
 The application has been tested locally and in the Vercel deployment to verify that the routes load correctly and the layout is responsive across desktop and mobile viewport sizes.
 
@@ -101,6 +102,50 @@ The application has been tested locally and in the Vercel deployment to verify t
 - [x] Responsive layout verified at mobile and desktop sizes
 - [x] Environment files and secrets excluded from Git
 - [x] Live preview URL available
+
+
+## Tool Results UI
+The `/chat` route includes a server-side scoreCandidate tool that evaluates how complete a candidate's qualification profile is.
+
+## Tool contract
+
+**Tool name:** `scoreCandidate`
+
+**Input schema:**
+```ts
+{
+  skills: string;
+  experience: string;
+  interests: string;
+  goals: string;
+}
+```
+
+The tool should only be called when the candidate has provided meaningful information for all four areas. The tool does not invent missing candidate information.
+
+**Return shape:**
+```ts
+{
+  score: number; // Integer from 0 to 100
+  level: "strong" | "moderate" | "developing";
+  strengths: string[];
+  recommendation: string;
+}
+```
+
+The score represents profile completeness:
+- Skills provided: 25 points
+- Experience provided: 25 points
+- Interests provided: 25 points
+- Goals provided: 25 points
+
+The UI renders the tool lifecycle as distinct states:
+- Input streaming: preparing the candidate score
+- Input available: candidate information received
+- Output available: qualification score card
+- Output error: designed error message when the tool fails or returns an unexpected result
+
+The successful output is rendered as a qualification score card rather than a raw JSON object. It displays the score, profile level, identified strengths, and recommendation.
 
 
 ## AI Assistance
