@@ -1,21 +1,13 @@
 "use client";
 
-import {
-  FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
-import {
-  DefaultChatTransport,
-  type UIMessage,
-} from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 
 import { useChat } from "@ai-sdk/react";
 
- function getMessageText(message: UIMessage) {
+function getMessageText(message: UIMessage) {
   return message.parts
     .filter((part) => part.type === "text")
     .map((part) => part.text)
@@ -32,11 +24,7 @@ function MessageContent({
   const text = getMessageText(message);
 
   if (!renderMarkdown) {
-    return (
-      <p className="whitespace-pre-wrap break-words">
-        {text}
-      </p>
-    );
+    return <p className="whitespace-pre-wrap break-words">{text}</p>;
   }
 
   return (
@@ -45,7 +33,6 @@ function MessageContent({
     </div>
   );
 }
-
 
 type ScoreCandidateToolPartData = {
   type: "tool-scoreCandidate";
@@ -68,9 +55,7 @@ function ScoreCandidateToolPart({
   if (part.state === "input-streaming") {
     return (
       <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-blue-900">
-        <p className="text-sm font-semibold">
-          Preparing candidate score
-        </p>
+        <p className="text-sm font-semibold">Preparing candidate score</p>
 
         <p className="mt-1 text-sm text-blue-700">
           Gathering the qualification information...
@@ -131,8 +116,7 @@ function ScoreCandidateToolPart({
       typeof output.level !== "string" ||
       !Array.isArray(output.strengths) ||
       !output.strengths.every(
-        (strength): strength is string =>
-          typeof strength === "string",
+        (strength): strength is string => typeof strength === "string",
       ) ||
       typeof output.recommendation !== "string"
     ) {
@@ -171,13 +155,9 @@ function ScoreCandidateToolPart({
           </div>
 
           <div className="text-right">
-            <p className="text-3xl font-bold text-gray-900">
-              {score}
-            </p>
+            <p className="text-3xl font-bold text-gray-900">{score}</p>
 
-            <p className="text-xs text-gray-500">
-              out of 100
-            </p>
+            <p className="text-xs text-gray-500">out of 100</p>
           </div>
         </div>
 
@@ -199,13 +179,9 @@ function ScoreCandidateToolPart({
         </div>
 
         <div className="mt-4 border-t border-gray-100 pt-4">
-          <p className="text-sm font-semibold text-gray-900">
-            Recommendation
-          </p>
+          <p className="text-sm font-semibold text-gray-900">Recommendation</p>
 
-          <p className="mt-1 text-sm text-gray-600">
-            {recommendation}
-          </p>
+          <p className="mt-1 text-sm text-gray-600">{recommendation}</p>
         </div>
       </div>
     );
@@ -214,23 +190,12 @@ function ScoreCandidateToolPart({
   return null;
 }
 
-
-
 export default function StreamingChat() {
   const [input, setInput] = useState("");
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
-  const [stoppedMessageId, setStoppedMessageId] = useState<string | null>(
-    null
-  );
+  const [stoppedMessageId, setStoppedMessageId] = useState<string | null>(null);
 
-  const {
-    messages,
-    sendMessage,
-    regenerate,
-    status,
-    stop,
-    error,
-  } = useChat({
+  const { messages, sendMessage, regenerate, status, stop, error } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
     }),
@@ -239,8 +204,7 @@ export default function StreamingChat() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
 
-  const isGenerating =
-    status === "submitted" || status === "streaming";
+  const isGenerating = status === "submitted" || status === "streaming";
 
   const latestAssistantMessage = [...messages]
     .reverse()
@@ -279,9 +243,7 @@ export default function StreamingChat() {
 
     const handleScroll = () => {
       const distanceFromBottom =
-        container.scrollHeight -
-        container.scrollTop -
-        container.clientHeight;
+        container.scrollHeight - container.scrollTop - container.clientHeight;
 
       const atBottom = distanceFromBottom <= 24;
 
@@ -349,6 +311,30 @@ export default function StreamingChat() {
           aria-label="Conversation"
         >
           <div className="flex flex-col gap-5">
+            {messages.length === 0 && (
+              <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
+                <p className="text-base font-semibold text-gray-900">
+                  Start your qualification profile
+                </p>
+
+                <p className="mt-2 max-w-md text-sm leading-6 text-gray-600">
+                  Tell the assistant about your skills, experience, interests,
+                  or internship goals to begin.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setInput(
+                      "I'd like to begin my qualification profile. Please ask me about my skills, experience, interests, and goals.",
+                    )
+                  }
+                  className="mt-5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                >
+                  Use a starter message
+                </button>
+              </div>
+            )}
             {messages.map((message) => {
               const isUser = message.role === "user";
               const messageText = getMessageText(message);
@@ -358,8 +344,7 @@ export default function StreamingChat() {
                 isGenerating &&
                 message.id === latestAssistantMessage?.id;
 
-              const wasStopped =
-                message.id === stoppedMessageId;
+              const wasStopped = message.id === stoppedMessageId;
 
               const renderMarkdown =
                 message.role === "assistant" &&
@@ -369,9 +354,7 @@ export default function StreamingChat() {
               return (
                 <div
                   key={message.id}
-                  className={`flex ${
-                    isUser ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
                     className={`max-w-[88%] rounded-2xl px-4 py-3 sm:max-w-[78%] ${
@@ -384,27 +367,28 @@ export default function StreamingChat() {
                       {isUser ? "You" : "Assistant"}
                     </p>
 
-                    {message.parts.map((part, index) => {if (part.type === "text") {
-    return part.text ? (
-      <MessageContent
-        key={`${message.id}-text-${index}`}
-        message={message}
-        renderMarkdown={renderMarkdown}
-      />
-    ) : null;
-  }
+                    {message.parts.map((part, index) => {
+                      if (part.type === "text") {
+                        return part.text ? (
+                          <MessageContent
+                            key={`${message.id}-text-${index}`}
+                            message={message}
+                            renderMarkdown={renderMarkdown}
+                          />
+                        ) : null;
+                      }
 
-  if (part.type === "tool-scoreCandidate") {
-    return (
-     <ScoreCandidateToolPart
-      key={part.toolCallId}
-      part={part as unknown as ScoreCandidateToolPartData}
-     />
-    );
-  }
+                      if (part.type === "tool-scoreCandidate") {
+                        return (
+                          <ScoreCandidateToolPart
+                            key={part.toolCallId}
+                            part={part as unknown as ScoreCandidateToolPartData}
+                          />
+                        );
+                      }
 
-  return null;
-})}
+                      return null;
+                    })}
                   </div>
                 </div>
               );
@@ -434,9 +418,7 @@ export default function StreamingChat() {
                       aria-hidden="true"
                     />
 
-                    <span className="sr-only">
-                      Assistant is thinking
-                    </span>
+                    <span className="sr-only">Assistant is thinking</span>
                   </div>
                 </div>
               </div>
@@ -451,15 +433,15 @@ export default function StreamingChat() {
                   Something went wrong while generating a response
                 </p>
                 <p className="mt-1">
-                {error?.message ??
-                  "Something went wrong while generating a response. Please try again."}
+                  {error?.message ??
+                    "Something went wrong while generating a response. Please try again."}
                 </p>
                 <button
-                type="button"
-                onClick={() => regenerate()}
-                className="mt-3 rounded-lg bg-red-800 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-offset-2"
+                  type="button"
+                  onClick={() => regenerate()}
+                  className="mt-3 rounded-lg bg-red-800 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-offset-2"
                 >
-                 Try again
+                  Try again
                 </button>
               </div>
             )}
@@ -491,10 +473,7 @@ export default function StreamingChat() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => {
-              if (
-                event.key === "Enter" &&
-                !event.shiftKey
-              ) {
+              if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
 
                 if (input.trim() && !isGenerating) {
