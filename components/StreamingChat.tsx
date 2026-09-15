@@ -226,6 +226,7 @@ export default function StreamingChat() {
   const {
     messages,
     sendMessage,
+    regenerate,
     status,
     stop,
     error,
@@ -446,8 +447,20 @@ export default function StreamingChat() {
                 role="alert"
                 className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
               >
+                <p className="font-semibold">
+                  Something went wrong while generating a response
+                </p>
+                <p className="mt-1">
                 {error?.message ??
                   "Something went wrong while generating a response. Please try again."}
+                </p>
+                <button
+                type="button"
+                onClick={() => regenerate()}
+                className="mt-3 rounded-lg bg-red-800 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-offset-2"
+                >
+                 Try again
+                </button>
               </div>
             )}
           </div>
