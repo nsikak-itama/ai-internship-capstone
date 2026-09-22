@@ -194,15 +194,11 @@ export default function StreamingChat() {
   const [input, setInput] = useState("");
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [stoppedMessageId, setStoppedMessageId] = useState<string | null>(null);
-  const [streamDisconnected, setStreamDisconnected] = useState(false);
 
   const { messages, sendMessage, regenerate, status, stop, error } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
     }),
-    onFinish: ({ isDisconnect }) => {
-      setStreamDisconnected(isDisconnect);
-    },
   });
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -282,7 +278,6 @@ export default function StreamingChat() {
     }
 
     setStoppedMessageId(null);
-    setStreamDisconnected(false);
     sendMessage({ text: trimmedInput });
     setInput("");
   };
@@ -429,23 +424,23 @@ export default function StreamingChat() {
               </div>
             )}
 
-            {(status === "error" || streamDisconnected) && (
+            {status === "error" && (
               <div
                 role="alert"
                 className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
               >
                 <p className="font-semibold">
-                  {streamDisconnected ? "The response was interrupted" : "Something went wrong while generating a response"}
+                  The response couldn't be completed
                 </p>
+
                 <p className="mt-1">
-                  {streamDisconnected ? "The connection was interrupted before the response finished. Please try again."
-                  : error?.message ?? "Something went wrong while generating a response. Please try again."}
+                  The connection was interrupted or the server returned an
+                  error. Please try again.
                 </p>
                 <button
                   type="button"
                   disabled={isGenerating}
                   onClick={() => {
-                    setStreamDisconnected(false);
                     regenerate();
                   }}
                   className="mt-3 rounded-lg bg-red-800 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-offset-2"
