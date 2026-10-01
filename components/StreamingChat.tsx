@@ -194,6 +194,14 @@ export default function StreamingChat() {
   const [input, setInput] = useState("");
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [stoppedMessageId, setStoppedMessageId] = useState<string | null>(null);
+  const [actionState, setActionState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
+  const hasSubmittedRef = useRef(false);
+  const actionResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const { messages, sendMessage, regenerate, status, stop, error } = useChat({
     transport: new DefaultChatTransport({
@@ -268,6 +276,45 @@ export default function StreamingChat() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (!hasSubmittedRef.current) {
+      return;
+    }
+
+    if (status === "submitted" || status === "streaming") {
+      setActionState("loading");
+      return;
+    }
+
+    if (status === "ready") {
+      hasSubmittedRef.current = false;
+      setActionState("success");
+
+      if (actionResetTimeoutRef.current) {
+        clearTimeout(actionResetTimeoutRef.current);
+      }
+
+      actionResetTimeoutRef.current = setTimeout(() => {
+        setActionState("idle");
+      }, 900);
+
+      return;
+    }
+
+    if (status === "error") {
+      hasSubmittedRef.current = false;
+      setActionState("error");
+
+      if (actionResetTimeoutRef.current) {
+        clearTimeout(actionResetTimeoutRef.current);
+      }
+
+      actionResetTimeoutRef.current = setTimeout(() => {
+        setActionState("idle");
+      }, 1400);
+    }
+  }, [status]);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -278,6 +325,8 @@ export default function StreamingChat() {
     }
 
     setStoppedMessageId(null);
+    hasSubmittedRef.current = true;
+    setActionState("loading");
     sendMessage({ text: trimmedInput });
     setInput("");
   };
@@ -287,6 +336,13 @@ export default function StreamingChat() {
       setStoppedMessageId(latestAssistantMessage.id);
     }
 
+    hasSubmittedRef.current = false;
+
+    if (actionResetTimeoutRef.current) {
+      clearTimeout(actionResetTimeoutRef.current);
+    }
+
+    setActionState("idle");
     stop();
   };
 
@@ -491,23 +547,78 @@ export default function StreamingChat() {
             className="min-h-12 flex-1 resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 outline-none placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 disabled:cursor-not-allowed disabled:bg-gray-100"
           />
 
-          {isGenerating ? (
-            <button
-              type="button"
-              onClick={handleStop}
-              className="min-h-12 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-            >
-              Stop
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="min-h-12 rounded-xl bg-gray-900 px-5 py-3 font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Send
-            </button>
-          )}
+          {/* Motion notes:
+          - 200ms ease-out keeps state changes responsive without feeling abrupt.
+          - opacity + transform animate without causing layout reflow.
+          - active scale gives immediate press feedback.
+          - motion-reduce removes animation while preserving state feedback.
+          */}
+
+          <button
+            type={isGenerating ? "button" : "submit"}
+            onClick={isGenerating ? handleStop : undefined}
+            disabled={!isGenerating && !input.trim()}
+            aria-label={isGenerating ? "Stop generating response" : undefined}
+            className={`min-h-12 min-w-24 rounded-xl px-5 py-3 font-semibold text-white transition-[background-color,transform,opacity] duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none motion-reduce:transform-none ${
+              actionState === "success"
+                ? "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-600"
+                : actionState === "error"
+                  ? "bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                  : "bg-gray-900 hover:bg-gray-800 focus:ring-gray-900"
+            }`}
+          >
+            <span className="relative grid min-w-16 place-items-center">
+              <span
+                className={`col-start-1 row-start-1 inline-flex items-center gap-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+                  !isGenerating && actionState === "idle"
+                    ? "translate-y-0 opacity-100"
+                    : "-translate-y-1 opacity-0"
+                }`}
+                aria-hidden={isGenerating || actionState !== "idle"}
+              >
+                Send
+              </span>
+
+              <span
+                className={`col-start-1 row-start-1 inline-flex items-center gap-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+                  isGenerating
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-1 opacity-0"
+                }`}
+                aria-hidden={!isGenerating}
+              >
+                <span
+                  className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+                Sending
+              </span>
+
+              <span
+                className={`col-start-1 row-start-1 inline-flex items-center gap-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+                  !isGenerating && actionState === "success"
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-1 opacity-0"
+                }`}
+                aria-hidden={isGenerating || actionState !== "success"}
+              >
+                <span aria-hidden="true">&#10003;</span>
+                Sent
+              </span>
+
+              <span
+                className={`col-start-1 row-start-1 inline-flex items-center gap-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+                  !isGenerating && actionState === "error"
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-1 opacity-0"
+                }`}
+                aria-hidden={isGenerating || actionState !== "error"}
+              >
+                <span aria-hidden="true">!</span>
+                Error
+              </span>
+            </span>
+          </button>
         </div>
 
         <p className="mt-2 text-xs text-gray-500">
