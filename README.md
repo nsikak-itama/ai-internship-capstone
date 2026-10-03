@@ -80,6 +80,7 @@ The deployed application includes the following routes:
 - `/settings` — Settings form
 - `/health` — Health-check page with fetched data
 - `/chat` — Streaming AI qualification chat with candidate scoring tool results
+- `/buttons` — Week 6 Assignment 1 motion button demo with success and failure triggers
 
 The application has been tested locally and in the Vercel deployment to verify that the routes load correctly and the layout is responsive across desktop and mobile viewport sizes.
 
@@ -147,6 +148,16 @@ The UI renders the tool lifecycle as distinct states:
 
 The successful output is rendered as a qualification score card rather than a raw JSON object. It displays the score, profile level, identified strengths, and recommendation.
 
+
+## Week 6 Motion Button
+
+The `/buttons` page demonstrates the Week 6 Assignment 1 button lifecycle:
+
+`idle → loading → success/error → idle`
+
+The button uses a 200ms `ease-out` transition to keep state changes responsive without feeling abrupt. Opacity and transform are used for the label and icon transitions so the animation avoids unnecessary layout reflow. A small active scale provides immediate press feedback.
+
+The component also includes visible keyboard focus styles and respects `prefers-reduced-motion` by removing the animations while keeping the state changes and feedback accessible.
 
 ## AI Assistance
 
