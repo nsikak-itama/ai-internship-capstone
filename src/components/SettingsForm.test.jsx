@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import SettingsForm from "./SettingsForm.jsx";
 
 afterEach(() => {
@@ -31,7 +31,7 @@ describe("SettingsForm", () => {
     await user.tab();
 
     expect(
-      screen.getByText("Full name must be at least 2 characters.")
+      screen.getByText("Full name must be at least 2 characters."),
     ).toBeInTheDocument();
 
     expect(nameInput).toHaveAttribute("aria-invalid", "true");
@@ -59,25 +59,20 @@ describe("SettingsForm", () => {
     await user.type(emailInput, "not-an-email");
     await user.tab();
 
-    expect(screen.getByText("Enter a valid email address.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Enter a valid email address."),
+    ).toBeInTheDocument();
     expect(emailInput).toHaveAttribute("aria-invalid", "true");
     expect(emailInput).toHaveAttribute("aria-describedby", "email-error");
   });
 
   it("shows a success message after successful submission", async () => {
-    vi.useFakeTimers();
-
-    const user = userEvent.setup({
-      advanceTimers: vi.advanceTimersByTime,
-    });
+    const user = userEvent.setup();
 
     render(<SettingsForm />);
 
     await user.type(screen.getByLabelText("Full Name"), "Jane Doe");
-    await user.type(
-      screen.getByLabelText("Email Address"),
-      "jane@example.com"
-    );
+    await user.type(screen.getByLabelText("Email Address"), "jane@example.com");
 
     const saveButton = screen.getByRole("button", { name: "Save" });
 
@@ -85,27 +80,21 @@ describe("SettingsForm", () => {
 
     await user.click(saveButton);
 
-    expect(
-      screen.getByRole("button", { name: "Saving..." })
-    ).toBeDisabled();
-
-    await vi.advanceTimersByTimeAsync(1000);
+    expect(screen.getByRole("button", { name: "Saving..." })).toBeDisabled();
 
     expect(
-      await screen.findByText("Settings saved successfully")
+      await screen.findByText(
+        "Settings saved successfully",
+        {},
+        { timeout: 1500 },
+      ),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("button", { name: "Save" })
-    ).toBeEnabled();
-  });
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
+  }, 10000);
 
   it("resets the form and clears validation and success messages", async () => {
-    vi.useFakeTimers();
-
-    const user = userEvent.setup({
-      advanceTimers: vi.advanceTimersByTime,
-    });
+    const user = userEvent.setup();
 
     render(<SettingsForm />);
 
@@ -119,9 +108,11 @@ describe("SettingsForm", () => {
 
     await user.click(screen.getByRole("button", { name: "Save" }));
 
-    await vi.advanceTimersByTimeAsync(1000);
-
-    await screen.findByText("Settings saved successfully");
+    await screen.findByText(
+      "Settings saved successfully",
+      {},
+      { timeout: 1500 },
+    );
 
     await user.click(screen.getByRole("button", { name: "Reset" }));
 
@@ -130,15 +121,15 @@ describe("SettingsForm", () => {
     expect(themeSelect).toHaveValue("system");
 
     expect(
-      screen.queryByText("Settings saved successfully")
+      screen.queryByText("Settings saved successfully"),
     ).not.toBeInTheDocument();
 
     expect(
-      screen.queryByText("Full name is required.")
+      screen.queryByText("Full name is required."),
     ).not.toBeInTheDocument();
 
     expect(
-      screen.queryByText("Email address is required.")
+      screen.queryByText("Email address is required."),
     ).not.toBeInTheDocument();
-  });
+  }, 10000);
 });

@@ -29,3 +29,8 @@ coverage/
 
 # TypeScript build info
 tsconfig.tsbuildinfo
+
+# Playwright artifacts
+playwright-report/
+test-results/
+playwright/.cache/
