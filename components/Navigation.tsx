@@ -6,6 +6,7 @@ export default function Navigation() {
       <Link href="/">Home</Link>
       <Link href="/settings">Settings</Link>
       <Link href="/health">Health</Link>
+      <Link href="/sneaker-studio">Sneaker Studios</Link>
     </nav>
   );
 }

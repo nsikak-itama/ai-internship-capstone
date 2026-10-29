@@ -159,6 +159,34 @@ The button uses a 200ms `ease-out` transition to keep state changes responsive w
 
 The component also includes visible keyboard focus styles and respects `prefers-reduced-motion` by removing the animations while keeping the state changes and feedback accessible.
 
+## Week 7: Sneaker 3D Configurator
+
+### Overview
+An interactive 3D sneaker configurator built with Next.js,
+React Three Fiber, and Three.js. Users can inspect the sneaker
+from different angles and customize its color.
+
+The experience respects the user's reduced-motion preference
+by showing a static sneaker preview when reduced motion is enabled.
+
+### Performance Notes
+- Original GLB model: 7,833,592 bytes (approximately 7.47 MiB).
+- Optimized GLB model: 1,452,392 bytes (approximately 1.39 MiB).
+- Model file size reduced by approximately 81.5% by resizing textures
+  from 2048 × 2048 to 1024 × 1024.
+- The 3D canvas is dynamically imported for the interactive experience.
+- Network testing confirmed that the GLB model is not requested when
+  the static preview is shown, and is requested in interactive mode.
+- The production build completes successfully with `npm run build`.
+- Replaced the 2.23 MB PNG fallback with an optimized WebP image,
+  preserving its 1536 × 1024 dimensions and reducing image download size.
+- Removed the original full-size GLB from the public assets directory;
+  retained the optimized 1.39 MB model for the interactive experience.
+
+### Future Improvement
+Measure frame rate and loading time on lower-powered mobile devices,
+then evaluate further texture compression and rendering optimizations.
+
 ## AI Assistance
 
 Claude Code is used throughout this project to assist with documentation, project setup, and development tasks.
