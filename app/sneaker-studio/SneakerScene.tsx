@@ -91,7 +91,6 @@ export default function SneakerScene() {
             key={colorOption.value}
             type="button"
             aria-label={`Change sneaker color to ${colorOption.name}`}
-            title={colorOption.name}
             onClick={() => setSelectedColor(colorOption.value)}
             style={{
               width: "40px",
