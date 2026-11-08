@@ -362,9 +362,12 @@ export default function StreamingChat() {
       <div className="relative">
         <div
           ref={messagesContainerRef}
-          className="h-[55vh] min-h-[320px] overflow-y-auto px-4 py-5 sm:px-6"
+          role="log"
           aria-live="polite"
+          aria-relevant="additions text"
+          aria-atomic="false"
           aria-label="Conversation"
+          className="h-[55vh] min-h-[320px] overflow-y-auto px-4 py-5 sm:px-6"
         >
           <div className="flex flex-col gap-5">
             {messages.length === 0 && (
@@ -591,7 +594,7 @@ export default function StreamingChat() {
                   className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white motion-reduce:animate-none"
                   aria-hidden="true"
                 />
-                Sending
+                Stop
               </span>
 
               <span
